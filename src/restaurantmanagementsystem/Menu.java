@@ -4,19 +4,29 @@
  * and open the template in the editor.
  */
 package restaurantmanagementsystem;
+import java.awt.print.Printable;
+import java.awt.print.PrinterJob;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.text.DefaultStyledDocument;
+import java.awt.*;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterException;
+import javax.swing.plaf.basic.BasicTextUI;
+import javax.swing.text.StyleContext;
+import javax.swing.text.View;
 
 /**
  *
  * @author Sylva
  */
-public class Menu extends javax.swing.JFrame {
+public class Menu extends javax.swing.JFrame implements Printable{
     String food, meat,fish,soup,drink;
     double mealCost, drinkCost, tax, deliveryCost;
     String displayMealCost, displayDrinkCost,displaySubtotal;
     double taxRate = (2.0/100.0);
     double subtotal, totalCost;
+    private PrintView printView;
     
     
     //Calculator Variables
@@ -71,6 +81,7 @@ public class Menu extends javax.swing.JFrame {
         jPanel15 = new javax.swing.JPanel();
         jScrollPane7 = new javax.swing.JScrollPane();
         receiptTextArea = new javax.swing.JTextArea();
+        btnPrint = new javax.swing.JButton();
         jPanel8 = new javax.swing.JPanel();
         jPanel27 = new javax.swing.JPanel();
         btnCalcClear = new javax.swing.JButton();
@@ -374,15 +385,31 @@ public class Menu extends javax.swing.JFrame {
         receiptTextArea.setRows(5);
         jScrollPane7.setViewportView(receiptTextArea);
 
+        btnPrint.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        btnPrint.setText("Print Receipt");
+        btnPrint.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        btnPrint.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrintActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel15Layout = new javax.swing.GroupLayout(jPanel15);
         jPanel15.setLayout(jPanel15Layout);
         jPanel15Layout.setHorizontalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel15Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnPrint, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(68, 68, 68))
         );
         jPanel15Layout.setVerticalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(jPanel15Layout.createSequentialGroup()
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnPrint, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         calculatorTab3.addTab("Receipt", jPanel15);
@@ -965,7 +992,7 @@ public class Menu extends javax.swing.JFrame {
                 .addComponent(btnTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnReceipt, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 360, Short.MAX_VALUE)
                 .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1442,6 +1469,17 @@ public class Menu extends javax.swing.JFrame {
 
     }//GEN-LAST:event_initialAmountFieldActionPerformed
 
+    private void btnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintActionPerformed
+       PrinterJob pj = PrinterJob.getPrinterJob();
+        pj.setPrintable(this);
+        if (pj.printDialog()) {
+            try { pj.print(); }
+            catch (PrinterException pe) {
+                System.out.println(pe);
+            }
+        }
+    }//GEN-LAST:event_btnPrintActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1469,6 +1507,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btnMultiply;
     private javax.swing.JButton btnPlus;
     private javax.swing.JButton btnPoint;
+    private javax.swing.JButton btnPrint;
     private javax.swing.JButton btnReceipt;
     private javax.swing.JButton btnReset;
     private javax.swing.JButton btnTotal;
@@ -1578,7 +1617,39 @@ public class Menu extends javax.swing.JFrame {
         return item;
         
     }
-  /*  private String getFood(){
-        return this.food;
-    }*/
+    
+    @Override
+    public int print(Graphics pg, PageFormat pageFormat,
+    int pageIndex) throws PrinterException {
+    PrinterJob pjob = PrinterJob.getPrinterJob();
+    DefaultStyledDocument docStyle = new DefaultStyledDocument();
+    StyleContext styleContext = new StyleContext();
+    
+    
+    pg.translate((int)pageFormat.getImageableX(),
+        (int)pageFormat.getImageableY());
+        int wPage = (int)pageFormat.getImageableWidth();
+        int hPage = (int)pageFormat.getImageableHeight();
+        pg.setClip(0, 0, wPage, hPage);
+         
+        // Only do this once per print
+        if (printView == null) {
+            BasicTextUI btui = (BasicTextUI)receiptTextArea.getUI();
+            View root = btui.getRootView( receiptTextArea );
+          printView = new PrintView(
+            docStyle.getDefaultRootElement(),
+            root, wPage, hPage);
+      }
+         
+        boolean bContinue = printView.paintPage(pg,
+        hPage, pageIndex);
+        System.gc();
+         
+        if (bContinue)
+            return PAGE_EXISTS;
+        else {
+            printView = null;
+            return NO_SUCH_PAGE;
+        }
+    }
 }
